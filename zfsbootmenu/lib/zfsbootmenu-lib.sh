@@ -49,7 +49,7 @@ column_wrap() {
     footer="${footer//+([:])/:}"
     footer="${footer//:/$'\n'}"
     shopt -u extglob
-  else 
+  else
     footer="$( echo -e "${footer}" | column -t -s ':' )"
   fi
 
@@ -96,7 +96,7 @@ ${kcl_text:+${kcl_text}:}[CTRL+L] view logs:${blank}[CTRL+H] help" \
 [CTRL+R] recovery shell
 [CTRL+H] help" )"
 
-  expects="--expect=alt-e,alt-k,alt-d,alt-s,alt-c,alt-r,alt-p,alt-w,alt-j,alt-o${kcl_bind:+,${kcl_bind}}"
+  expects="--expect=alt-e,alt-k,alt-d,alt-s,alt-c,alt-r,alt-p,alt-w,alt-j,alt-o,alt-a${kcl_bind:+,${kcl_bind}}"
 
   if ! selected="$( ${FUZZYSEL} -0 --prompt "BE > " \
       ${expects} ${expects//alt-/ctrl-} ${expects//alt-/ctrl-alt-} \
@@ -326,6 +326,21 @@ draw_pool_status() {
   return 0
 }
 
+# arg1: ZFS filesystem
+# prints: nothing
+# returns: nothing
+
+draw_alternate_kcl() {
+  local benv selected
+
+  benv="${1}"
+  if [ -z "${benv}" ]; then
+    zerror "benv is undefined"
+    return 1
+  fi
+}
+
+
 # arg1: selected snapshot
 # arg2: subkey
 # prints: snapshot/filesystem creation prompt
@@ -337,7 +352,7 @@ snapshot_dispatcher() {
   local prompt header check_base pre_populated user_input valid_name clone_target
 
   selected="${1}"
-  if [ -z "$selected" ]; then
+  if [ -z "${selected}" ]; then
     zerror "selected is undefined"
     return 1
   fi

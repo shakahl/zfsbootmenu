@@ -291,5 +291,8 @@ while true; do
     "mod-o")
       change_sort
       ;;
+    "mod-a")
+      draw_alternate_kcl
+      ;;
   esac
 done
