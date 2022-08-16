@@ -181,6 +181,9 @@ while true; do
         "mod-u")
           set_default_kernel "${fs}"
           ;;
+        "mod-a")
+          draw_alternate_kcl "${fs}" "${kpath##*/}"
+          ;;
       esac
       ;;
     "mod-p")
@@ -290,9 +293,6 @@ while true; do
       ;;
     "mod-o")
       change_sort
-      ;;
-    "mod-a")
-      draw_alternate_kcl
       ;;
   esac
 done

@@ -136,14 +136,14 @@ draw_kernel() {
 
   header="$( column_wrap "\
 [RETURN] boot:[ESCAPE] back
-[CTRL+D] set default:[CTRL+U] unset default
+[CTRL+D] set default:[CTRL+U] unset default:[CTRL+A] alternate kcl
 [CTRL+L] view logs:[CTRL+H] help" \
 "\
 [RETURN] boot
 [CTRL+D] set default
 [CTRL+H] help" )"
 
-  expects="--expect=alt-d,alt-u"
+  expects="--expect=alt-d,alt-u,alt-a"
 
   if ! selected="$( HELP_SECTION=kernel-management ${FUZZYSEL} \
       --prompt "${benv} > " --tac --with-nth=2 --header="${header}" \
@@ -331,13 +331,33 @@ draw_pool_status() {
 # returns: nothing
 
 draw_alternate_kcl() {
-  local benv selected
+  local benv kernel selected
 
   benv="${1}"
   if [ -z "${benv}" ]; then
     zerror "benv is undefined"
     return 1
   fi
+
+  kernel="${2}"
+  if [ -z "${kernel}" ]; then
+    zerror "kernel is undefined"
+    return 1
+  fi
+
+  header="$( column_wrap "\
+[ENTER] boot
+[ESCAPE] back:[CTRL+H] help" )"
+
+  if ! selected="$( zfs get all -H -o property,value "${benv}" \
+    | grep org.zfsbootmenu:commandline: | cut -d ':' -f 3- | sed -e 's/\t/ (/' -e 's/$/)/' \
+    | HELP_SECTION=alt-kcl ${FUZZYSEL} \
+      --prompt "${benv} ${kernel} > " --tac --header "${header}" )"; then
+    return 1
+  fi
+  # shellcheck disable=SC2119
+  echo "${selected}"
+  zdebug "booting alternate: ${selected}"
 }
 
 
