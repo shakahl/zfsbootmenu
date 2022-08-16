@@ -774,6 +774,14 @@ find_be_kernels() {
 
   zdebug "default kernel set to ${def_kernel}"
   echo "${def_kernel##*/}" > "${def_kernel_file}"
+
+  # re-sort the list of possible kernels to move the default to the end of the list
+  # TODO: this could be slightly more elegant ...
+
+  grep -v "${def_kernel##*/}" "${kernel_records}" > "${mnt/mnt/sorted_kernels}"
+  echo "${def_fs} ${def_kernel} ${def_initramfs}" >> "${mnt/mnt/sorted_kernels}"
+  mv "${mnt/mnt/sorted_kernels}" "${kernel_records}"
+
   return 0
 }
 
