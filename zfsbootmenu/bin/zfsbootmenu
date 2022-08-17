@@ -267,6 +267,20 @@ while true; do
       tput cnorm
       ;;
     "mod-e")
+      selection="$( draw_alternate_kcl "${selected_be}" )"
+      IFS=, read -r subkey selected_kcl <<< "${selection}"
+
+      zdebug "selected_kcl: ${selected_kcl}"
+
+      case "${subkey}" in
+        "enter")
+          continue
+          ;;
+        *)
+          continue
+          ;;
+        esac
+
       tput clear
       tput cnorm
 

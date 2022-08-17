@@ -331,7 +331,8 @@ draw_pool_status() {
 # returns: nothing
 
 draw_alternate_kcl() {
-  local benv kernel selected
+  local benv alternates default_value header
+  local expects selected
 
   benv="${1}"
   if [ -z "${benv}" ]; then
@@ -339,25 +340,38 @@ draw_alternate_kcl() {
     return 1
   fi
 
-  kernel="${2}"
-  if [ -z "${kernel}" ]; then
-    zerror "kernel is undefined"
-    return 1
+  # find any alternate KCLs
+  while IFS=$'\t' read -r kcl_prop kcl_value; do
+    kcl_prop="${kcl_prop##org.zfsbootmenu:commandline}"
+    if [ -z "${kcl_prop}" ] ; then
+      default_value="${kcl_value}"
+      continue
+    fi
+    alternates+=( "${kcl_prop##*:} (${kcl_value})" )
+  done <<< "$( zfs get all -H -o property,value "${benv}" | grep org.zfsbootmenu:commandline )"
+
+  if [ -n "${default_value}" ] ; then
+    alternates+=( "default (${default_value})" )
   fi
 
   header="$( column_wrap "\
-[ENTER] boot
-[ESCAPE] back:[CTRL+H] help" )"
+[RETURN] boot with selected::[CTRL+E] edit
+[CTRL+H] help::[ESCAPE] back" )"
 
-  if ! selected="$( zfs get all -H -o property,value "${benv}" \
-    | grep org.zfsbootmenu:commandline: | cut -d ':' -f 3- | sed -e 's/\t/ (/' -e 's/$/)/' \
-    | HELP_SECTION=alt-kcl ${FUZZYSEL} \
-      --prompt "${benv} ${kernel} > " --tac --header "${header}" )"; then
+  expects="--expects=alt-e,alt-d"
+
+  if ! selected="$( HELP_SECTION=kcl-management ${FUZZYSEL} \
+    --prompt "${benv} KCL > " --tac \
+    ${expects} ${expects//alt-/ctrl-} ${expects//alt-/ctrl-alt-} \
+    --header="${header}" < <( printf "%s\n" "${alternates[@]}" ) )"; then
     return 1
   fi
-  # shellcheck disable=SC2119
+
+  selected="$( csv_cat <<< "${selected}" )"
   echo "${selected}"
-  zdebug "booting alternate: ${selected}"
+  zdebug "selected: ${selected}"
+
+  return 0
 }
 
 
