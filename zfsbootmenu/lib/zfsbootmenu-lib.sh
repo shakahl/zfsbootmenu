@@ -136,14 +136,14 @@ draw_kernel() {
 
   header="$( column_wrap "\
 [RETURN] boot:[ESCAPE] back
-[CTRL+D] set default:[CTRL+U] unset default:[CTRL+A] alternate kcl
+[CTRL+D] set default:[CTRL+U] unset default:[CTRL+S] select alternate kcl
 [CTRL+L] view logs:[CTRL+H] help" \
 "\
 [RETURN] boot
 [CTRL+D] set default
 [CTRL+H] help" )"
 
-  expects="--expect=alt-d,alt-u,alt-a"
+  expects="--expect=alt-d,alt-u,alt-s"
 
   if ! selected="$( HELP_SECTION=kernel-management ${FUZZYSEL} \
       --prompt "${benv} > " --tac --with-nth=2 --header="${header}" \
@@ -327,12 +327,12 @@ draw_pool_status() {
 }
 
 # arg1: ZFS filesystem
-# prints: nothing
+# prints: action, kcl to use 
 # returns: nothing
 
 draw_alternate_kcl() {
   local benv alternates default_value header
-  local expects selected
+  local expects selected discard
 
   benv="${1}"
   if [ -z "${benv}" ]; then
@@ -355,10 +355,10 @@ draw_alternate_kcl() {
   fi
 
   header="$( column_wrap "\
-[RETURN] boot with selected::[CTRL+E] edit
+[RETURN] use for next boot::[CTRL+E] edit
 [CTRL+H] help::[ESCAPE] back" )"
 
-  expects="--expects=alt-e,alt-d"
+  expects="--expect=alt-e"
 
   if ! selected="$( HELP_SECTION=kcl-management ${FUZZYSEL} \
     --prompt "${benv} KCL > " --tac \
@@ -368,6 +368,10 @@ draw_alternate_kcl() {
   fi
 
   selected="$( csv_cat <<< "${selected}" )"
+
+  # Strip off the KCL string, leaving the key combo used and the property suffix
+  # shellcheck disable=SC2034
+  IFS=' ' read -r selected discard <<< "${selected}"
   echo "${selected}"
   zdebug "selected: ${selected}"
 
